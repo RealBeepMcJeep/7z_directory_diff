@@ -2,14 +2,16 @@ used for creating "patch" 7z files by detecting differences between an existing 
 
 uses txt dumps from the `7z l -slt` command
 
-eg:
+eg of usage:
 run in directory with the 7z files
 ```bash
 7z l -slt first_backup.7z > first_backup.7z.txt
 7z l -slt diff_1.7z > diff_1.7z.txt
 7z l -slt diff_2.7z > diff_2.7z.txt
 ```
-change constants in main.py
+- move txt files produced to directory immediately above target backup directory (important relative paths are conserved and consistent).
+- also move main.py to directory immediately above target backup directory (important relative paths are conserved and consistent).
+- change constants in main.py.
 ```py
 _7Z_DUMP_FILES = ['first_backup.7z.txt', 'diff_1.7z.txt', 'diff_2.7z.txt']
 DIR_TO_DIFF = 'app_directory'
