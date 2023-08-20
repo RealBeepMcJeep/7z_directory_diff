@@ -11,6 +11,8 @@ def crc32(fileName):
             hash = zlib.crc32(s, hash)
         return "%08X" % (hash & 0xFFFFFFFF)
 
+# 7z l dumps prioritized as last more important
+# these are obtained via `7z l -slt <7z_fname> > <7z_fname>.txt`
 _7Z_DUMP_FILES = ['2023-08-16_Baldurs Gate 3.7z.txt', '2023-08-17_Baldurs Gate 3-Patch0Hotfix4.7z.txt']
 
 # gather 7Z data
@@ -20,19 +22,39 @@ for fname in _7Z_DUMP_FILES:
     with open(fname, 'r') as f:
         lines = f.readlines()
 
+    # example block (blocks separated by empty newlines):
+    # Path = Baldurs Gate 3\bin\gold.2023-08-10T17-29-33-191773.log
+    # Size = 17317
+    # Packed Size = 
+    # Modified = 2023-08-10 17:52:34.0768743
+    # Attributes = A
+    # CRC = 12F9B287
+    # Encrypted = -
+    # Method = LZMA2:25
+    # Block = 0
+    
     cur_path = ''
     cur_size = '0'
     cur_crc = ''
     data = {}
     for line in lines:
-        if line.startswith('Path = '):
+        # flush on empty lines
+        if line.strip() == '':
+            if cur_path != '' and cur_size != '0' and cur_crc != '':
+                data[cur_path] = {'size': int(cur_size), 'crc': cur_crc}
+            cur_path = ''
+            cur_size = '0'
+            cur_crc = ''
+        elif line.startswith('Path = '):
             cur_path = line.strip()[7:]
-        if line.startswith('Size = '):
+        elif line.startswith('Size = '):
             cur_size = line.strip()[7:]
-        if line.startswith('CRC = '):
+        elif line.startswith('CRC = '):
             cur_crc = line.strip()[6:]
             print(f'"{cur_path}" "{cur_size}" "{cur_crc}"')
-            data[cur_path] = {'size': int(cur_size), 'crc': cur_crc}
+            # CRC is usually last attribute we care about, so should be safe to assign here
+            if cur_path != '' and cur_size != '0' and cur_crc != '':
+                data[cur_path] = {'size': int(cur_size), 'crc': cur_crc}
     data_by_fname[fname] = data
     
     for path in data:
