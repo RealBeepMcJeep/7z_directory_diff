@@ -10,7 +10,6 @@ run in directory with the 7z files
 7z l -slt diff_2.7z > diff_2.7z.txt
 ```
 change constants in main.py
-```
 ```py
 _7Z_DUMP_FILES = ['first_backup.7z.txt', 'diff_1.7z.txt', 'diff_2.7z.txt']
 DIR_TO_DIFF = 'app_directory'
